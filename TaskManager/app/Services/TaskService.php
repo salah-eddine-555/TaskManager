@@ -1,6 +1,7 @@
 <?php
 namespace App\Services;
 use App\Models\Task;
+use Illuminate\Support\Facades\Auth;
 
 
 class TaskService {
@@ -17,24 +18,41 @@ class TaskService {
         return $tasks;
     }
 
-    public function create($data){
-        
-    } 
+   public function create(array $data){
 
-    public function modifer($data, Task $task){
+    $user = Auth::user();
 
+    return Task::create([
+        'title' => $data['title'],
+        'description' => $data['description']??  null,
+        'status' => $data['status'],
+        'due_date' => $data['due_date'] ?? null,
+        'user_id' => $user->id
+    ]);
+}
 
+    public function modifier(array $data, Task $task){
 
+    $user = Auth::user();
+
+    if($task->user_id !== $user->id){
+        return null;
     }
+
+    $task->update($data);
+
+    return $task;
+}
 
     public function supprimer(Task $task){
-        //supprimer une tache a partire a son createur de ce tache il n'est pas le droit de supprimer autre tache 
-    }
 
-    // ce ci le service pour le controller TaskController dans ce  controller on va fait les actions 
-    // pour les action CRUD qui fait a partire de utilsateur  a authentiier 
-    //
+            $user = Auth::user();
 
+            if($task->user_id !== $user->id){
+                return false;
+            }
+            $task->delete();
 
-    
+            return true;
+        }    
 }
